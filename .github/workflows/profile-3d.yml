@@ -1,0 +1,86 @@
+name: Update profile activity graph
+
+"on":
+  # 매일 03:17 UTC에 실행한다. 한국 표준시(KST)는 UTC보다 9시간 빠르다.
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+# 저장소 전체에는 쓰기 권한을 주지 않고, 필요한 작업에만 아래 권한을 준다.
+permissions: {}
+
+concurrency:
+  group: profile-3d-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-graph:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Check out profile repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Generate activity graph
+        uses: yoshi389111/github-profile-3d-contrib@7d95e7d4cdc028dd1e1cbd957d65f35efb12ae39 # v0.9.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USERNAME: ${{ github.repository_owner }}
+          SETTING_JSON: assets/activity-settings.json
+
+      - name: Validate and install generated SVG files
+        shell: bash
+        run: |
+          set -euo pipefail
+          # 생성기가 만든 두 테마 SVG만 확인한 뒤 공개 assets 경로로 옮긴다.
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+
+          expected = ("activity-light.svg", "activity-dark.svg")
+          output_dir = Path("profile-3d-contrib")
+          target_dir = Path("assets")
+          forbidden = {"script", "foreignobject", "iframe", "object", "embed"}
+
+          for filename in expected:
+              source = output_dir / filename
+              if not source.is_file() or source.stat().st_size == 0:
+                  raise SystemExit(f"생성 파일이 없거나 비어 있습니다: {source}")
+              root = ET.parse(source).getroot()
+              if root.tag != "{http://www.w3.org/2000/svg}svg" or not root.get("viewBox"):
+                  raise SystemExit(f"SVG 루트 또는 viewBox를 확인할 수 없습니다: {source}")
+              for element in root.iter():
+                  local_name = element.tag.rsplit("}", 1)[-1].lower()
+                  if local_name in forbidden:
+                      raise SystemExit(f"허용하지 않는 SVG 요소입니다: {local_name}")
+                  for key, value in element.attrib.items():
+                      attr = key.rsplit("}", 1)[-1].lower()
+                      if attr.startswith("on") or (attr in {"href", "src"} and value.lower().startswith(("http:", "https:", "//"))):
+                          raise SystemExit(f"외부 참조 또는 실행 속성입니다: {key}={value}")
+              (target_dir / filename).write_bytes(source.read_bytes())
+          PY
+
+      - name: Commit and push only changed graph files
+        shell: bash
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # 무관한 파일을 stage하지 않도록 허용된 두 SVG 경로만 지정한다.
+          git add -- assets/activity-light.svg assets/activity-dark.svg
+          if git diff --cached --quiet; then
+            echo "그래프 변경이 없어 커밋을 생략합니다."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update profile activity graph"
+          # 다른 업데이트가 먼저 올라왔으면 생성 커밋을 최신 브랜치 위에 재적용한다.
+          git fetch origin "$TARGET_BRANCH"
+          git rebase "origin/$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
