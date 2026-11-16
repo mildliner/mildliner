@@ -102,3 +102,9 @@ A hackathon service for keeping blood donation records.
 Firebase Cloud Messaging · Git · GitHub
 
 [Contribution activity](https://github.com/mildliner?tab=overview)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/mildliner/mildliner/main/assets/activity-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/mildliner/mildliner/main/assets/activity-light.svg">
+  <img src="https://raw.githubusercontent.com/mildliner/mildliner/main/assets/activity-light.svg" width="100%" alt="mildliner's 3D contribution calendar">
+</picture>
