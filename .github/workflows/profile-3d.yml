@@ -1,9 +1,10 @@
 name: Update profile activity graph
 
 "on":
-  # 매일 03:17 UTC에 실행한다. 한국 표준시(KST)는 UTC보다 9시간 빠르다.
+  # 정각의 혼잡을 피해 매시 17분과 47분에 30분 간격으로 실행한다.
+  # KST는 UTC보다 9시간 빠르며 분은 같아 하루 48회 예약된다.
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "17,47 * * * *"
   workflow_dispatch:
 
 # 저장소 전체에는 쓰기 권한을 주지 않고, 필요한 작업에만 아래 권한을 준다.

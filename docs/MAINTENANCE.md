@@ -22,7 +22,7 @@
 
 ## 자동화 실행과 확인
 
-워크플로는 매일 03:17 UTC에 실행하며, 한국 표준시(KST)로 매일 12:17이다. 예약 실행은 GitHub의 부하에 따라 늦어질 수 있다. 공개 저장소에서 60일 동안 저장소 활동이 없으면 예약 워크플로가 자동 비활성화될 수 있다. 수동 실행 명령은 다음과 같다.
+워크플로는 매시 17분과 47분(UTC, KST도 분은 동일)에 30분 간격으로 예약되며 하루 48회 실행을 계획한다. 정각의 혼잡은 피하지만 GitHub 예약 실행은 부하에 따라 지연되거나 누락될 수 있다. 원본 기여 집계와 이미지 캐시에도 지연이 있을 수 있으므로 30분 이내 반영을 보장하지 않는다. 공개 저장소의 표준 `ubuntu-latest` GitHub 호스팅 러너 사용은 무료다. 출력이 이전 SVG와 같으면 새 커밋을 생략한다. 공개 저장소에서 60일 동안 저장소 활동이 없으면 예약 워크플로가 자동 비활성화될 수 있다. 수동 실행 명령은 다음과 같다.
 
 ```sh
 # 프로필 저장소에서 그래프 업데이트 워크플로를 수동으로 시작한다.
@@ -55,6 +55,7 @@ gh run view <run-id> --repo mildliner/mildliner --log-failed
 - [프로필 그래프 액션 공식 사용법](https://github.com/yoshi389111/github-profile-3d-contrib)
 - [actions/checkout 릴리스](https://github.com/actions/checkout/releases)
 - [GitHub 예약 워크플로 안내](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows#schedule)
+- [GitHub Actions 요금 및 사용량](https://docs.github.com/en/actions/concepts/billing-and-usage)
 - [GitHub 공개 저장소 비활성 워크플로 정책](https://docs.github.com/actions/using-workflows/disabling-and-enabling-a-workflow#disabling-a-workflow)
 
 현재 워크플로는 `actions/checkout` v7.0.1 (`3d3c42e5aac5ba805825da76410c181273ba90b1`)과 `github-profile-3d-contrib` v0.9.3 (`7d95e7d4cdc028dd1e1cbd957d65f35efb12ae39`)를 사용한다.
